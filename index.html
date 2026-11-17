@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>스텟 최적 분배 계산기</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1120;--card:#151f32;--card2:#1b2940;--line:#30405b;--text:#f0f5ff;--muted:#a2b0c7;--blue:#6da8ff;--orange:#ffbd65;--green:#69e2b0;--violet:#c0a6ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#182847 0%,var(--bg) 55%);color:var(--text);font:15px/1.5 system-ui,-apple-system,'Malgun Gothic',sans-serif}main{max-width:1050px;margin:auto;padding:26px 16px 64px}h1{font-size:clamp(25px,4vw,38px);margin:0 0 6px}h2{font-size:18px;margin:0 0 16px}p{margin:0}.subtitle{color:var(--muted);margin-bottom:22px}.layout{display:grid;grid-template-columns:minmax(280px,420px) minmax(300px,1fr);gap:18px;align-items:start}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 10px 34px #02061233}.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}.field input{width:100%;min-width:0;background:#0e1728;color:var(--text);border:1px solid #3a4c69;border-radius:10px;padding:11px 12px;font:inherit}.field input:focus{outline:2px solid #528bff;outline-offset:1px}.separate{border-top:1px solid var(--line);padding-top:19px;margin-top:20px}.help{font-size:12px;color:var(--muted);margin-top:10px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.stat{background:var(--card2);border-radius:12px;padding:13px 8px;text-align:center}.stat span{display:block;font-size:12px;color:var(--muted)}.stat strong{font-size:clamp(17px,2.8vw,25px);font-variant-numeric:tabular-nums}.stat.str strong{color:var(--blue)}.stat.agi strong{color:var(--orange)}.stat.int strong{color:var(--green)}.bar{display:flex;height:14px;border-radius:9px;overflow:hidden;margin:15px 0 10px;background:#2a3750}.bar div{height:100%}.legend{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}.hero{margin:21px 0;border-radius:14px;padding:18px;background:linear-gradient(115deg,#173d36,#193b4d)}.hero small{display:block;color:#b4e9d8}.hero strong{font-size:clamp(26px,5vw,38px);color:#8bffd2;font-variant-numeric:tabular-nums}.hero p{font-size:13px;color:#c4f6e4}table{width:100%;border-collapse:collapse}td{padding:10px 0;border-bottom:1px solid #2c3b53}td:first-child{color:var(--muted)}td:last-child{text-align:right;font-weight:650;font-variant-numeric:tabular-nums}button{background:#477cdb;color:#fff;border:0;border-radius:10px;padding:11px 18px;font:inherit;font-weight:650;cursor:pointer}button.secondary{background:#25344d}button:hover{filter:brightness(1.1)}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}.switch{display:flex;align-items:center;gap:8px;cursor:pointer}.switch input{accent-color:var(--blue);width:17px;height:17px}.manual{display:none}.manual.visible{display:block}.rangeRow{display:flex;justify-content:space-between;gap:8px;margin:14px 0 5px}.rangeRow label{color:var(--muted)}input[type=range]{width:100%;accent-color:var(--blue)}.tip{background:#1a2b43;border-radius:10px;padding:12px;color:#bfcfe3;font-size:12px}.resultDiff{color:#76ecc0}.foot{color:var(--muted);font-size:12px;margin-top:20px}#status{color:var(--muted);font-size:12px;margin-top:8px}@media(max-width:780px){.layout{grid-template-columns:1fr}.card{padding:18px}.stats{gap:6px}main{padding-top:18px}}
+</style>
+</head>
+<body><main>
+<header><h1>⚔️ 스텟 최적 분배 계산기</h1><p class="subtitle">힘 · 민첩 · 지력의 평균 DPS가 가장 높은 투자 조합을 자동 계산합니다.</p></header>
+<div class="layout"><section class="card">
+<h2>기본 능력치</h2><div class="formGrid">
+<div class="field"><label for="points">총 스텟포인트</label><input id="points" type="number" min="0" step="1" value="15000"></div>
+<div class="field"><label for="rebirth">환생력</label><input id="rebirth" type="number" min="0" value="14000"></div></div>
+<div class="separate"><h2>스텟 증가율</h2><div class="formGrid">
+<div class="field"><label for="strBonus">힘 증가율 (%)</label><input id="strBonus" type="number" min="0" value="0"></div>
+<div class="field"><label for="agiBonus">민첩 증가율 (%)</label><input id="agiBonus" type="number" min="0" value="100"></div>
+<div class="field"><label for="intBonus">지력 증가율 (%)</label><input id="intBonus" type="number" min="0" value="0"></div></div>
+<p class="help">예: 민첩 증가율 100% → 2,500포인트 투자로 유효 민첩 5,000 달성</p></div>
+<div class="separate"><h2>추가 효과</h2><div class="formGrid">
+<div class="field"><label for="critChance">추가 크리티컬 확률 (%)</label><input id="critChance" type="number" min="0" value="0"></div>
+<div class="field"><label for="critDamage">추가 크리티컬 데미지 (%)</label><input id="critDamage" type="number" min="0" value="0"></div>
+<div class="field"><label for="cooldown">추가 스킬 쿨타임 감소 (%)</label><input id="cooldown" type="number" min="0" max="40" step="0.1" value="0"></div></div>
+<p class="help">추가 스킬 쿨타임 감소는 최대 40%이며, 지력 효과 10%를 합하면 최대 50%입니다.</p></div>
+<div class="actions"><button id="reset" type="button" class="secondary">입력값 초기화</button></div>
+</section><section class="card">
+<h2>추천 최적 분배</h2><div class="stats"><div class="stat str"><span>힘 투자</span><strong id="optStr">-</strong></div><div class="stat agi"><span>민첩 투자</span><strong id="optAgi">-</strong></div><div class="stat int"><span>지력 투자</span><strong id="optInt">-</strong></div></div>
+<div class="bar"><div id="barStr" style="background:var(--blue)"></div><div id="barAgi" style="background:var(--orange)"></div><div id="barInt" style="background:var(--green)"></div></div>
+<div class="legend"><span>🔵 힘</span><span>🟠 민첩</span><span>🟢 지력</span></div>
+<div class="hero"><small>최대 평균 DPS (기본 쿨타임 1 기준)</small><strong id="bestDps">-</strong><p id="gain">-</p></div>
+<div class="tip" id="caps">민첩/지력 최대치 투자량 계산 중</div>
+<div class="separate"><label class="switch"><input id="manualEnabled" type="checkbox"> 직접 스텟 분배해서 비교하기</label>
+<div id="manual" class="manual"><div class="rangeRow"><label for="agiSlider">민첩 투자</label><strong id="agiVal">0</strong></div><input id="agiSlider" type="range" min="0" max="1" step="1" value="0">
+<div class="rangeRow"><label for="intSlider">지력 투자</label><strong id="intVal">0</strong></div><input id="intSlider" type="range" min="0" max="1" step="1" value="0">
+<p class="help" id="manualStr">남은 포인트는 힘에 자동 분배합니다.</p></div></div>
+<div class="separate"><h2 id="detailTitle">최적 분배 상세 결과</h2><table>
+<tr><td>적용 후 힘</td><td id="effStr">-</td></tr><tr><td>유효 민첩</td><td id="effAgi">-</td></tr><tr><td>유효 지력</td><td id="effInt">-</td></tr>
+<tr><td>일반 데미지</td><td id="normal">-</td></tr><tr><td>크리티컬 확률</td><td id="critRate">-</td></tr><tr><td>크리티컬 데미지 배율</td><td id="critMultiplier">-</td></tr><tr><td>크리티컬 발생 시 데미지</td><td id="critical">-</td></tr><tr><td>평균 1회 데미지</td><td id="avg">-</td></tr><tr><td>지력 쿨타임 감소</td><td id="intCool">-</td></tr><tr><td>최종 쿨타임 감소</td><td id="coolRate">-</td></tr><tr><td>쿨타임 DPS 배율</td><td id="coolMult">-</td></tr><tr><td>최종 평균 DPS</td><td id="dps">-</td></tr></table>
+<p id="status"></p><div class="actions"><button id="copy" type="button">결과 복사</button><button id="optimalButton" type="button" class="secondary">추천 분배 보기</button></div></div>
+</section></div>
+<p class="foot">계산 가정: 힘 +1당 피해 +1, 민첩 유효 5,000당 크리티컬 확률 20%, 지력 유효 5,000당 쿨타임 10% 감소. 크리티컬 데미지 기본 150%. 힘 증가율은 힘으로 추가되는 데미지만 증가시킵니다. 쿨타임마다 즉시 스킬을 사용하는 기준의 상대 DPS입니다. 별도 설치 및 인터넷 연결 없이 실행할 수 있습니다.</p>
+</main><script>
+'use strict';
+const ids=['points','rebirth','strBonus','agiBonus','intBonus','critChance','critDamage','cooldown'];
+const $=id=>document.getElementById(id);
+const fmt=v=>Math.round(v).toLocaleString('ko-KR');
+const percent=v=>(v*100).toFixed(2)+'%';
+let latest=null;
+function read(){let v={};for(let id of ids){let n=Number($(id).value);v[id]=Number.isFinite(n)?Math.max(0,n):0;}v.points=Math.min(1e9,Math.floor(v.points));v.cooldown=Math.min(40,v.cooldown);return v;}
+function solve(v){
+ const P=v.points,R=v.rebirth,sm=1+v.strBonus/100,am=1+v.agiBonus/100,im=1+v.intBonus/100;
+ const cm=1.5+v.critDamage/100,baseCrit=Math.min(1,v.critChance/100),baseCool=v.cooldown/100;
+ const maxA=Math.min(P,Math.ceil(5000/am)),maxI=Math.min(P,Math.ceil(5000/im));
+ const evalAt=(a,i)=>{let s=P-a-i,da=Math.min(5000,a*am),di=Math.min(5000,i*im),c=Math.min(1,baseCrit+da*.00004),cool=baseCool+di*.00002;
+ let normal=R+s*sm,critical=normal*cm,avg=normal*(1+c*(cm-1));return {a,i,s,da,di,c,cool,normal,critical,avg,dps:avg/(1-cool)};};
+ // 지력은 민첩·힘의 최적 조합에서 쿨타임 감소에 의한 기울기가 달라지므로,
+ // 5000 유효 지력 상한 내에서 정수 후보를 모두 평가합니다.
+ // 각 지력 값에서 민첩 목적함수는 구간별 오목한 이차함수로서 정점과 경계만 확인하면 됩니다.
+ let best=evalAt(0,0);
+ const b=.00004*am*(cm-1),q=1+baseCrit*(cm-1),critCap=baseCrit>=1?0:(1-baseCrit)/(.00004*am);
+ const check=(a,i)=>{a=Math.max(0,Math.min(maxA,P-i,Math.floor(a)));let candidate=evalAt(a,i);if(candidate.dps>best.dps+1e-10)best=candidate;};
+ for(let i=0;i<=maxI;i++){
+  const lim=Math.min(maxA,P-i),cap=Math.max(0,Math.min(lim,critCap));
+  const d=R+(P-i)*sm,vertex=b>0?(b*d-sm*q)/(2*b*sm):0;
+  for(const a of [0,lim,Math.floor(cap),Math.ceil(cap),Math.floor(vertex),Math.ceil(vertex),Math.floor(vertex)+1])check(a,i);
+ }
+ return {v,P,R,sm,am,im,cm,baseCrit,baseCool,maxA,maxI,best,allStr:evalAt(0,0),evalAt};
+}
+function view(){const x=solve(read());latest=x;const {P,best,allStr,maxA,maxI,am,im}=x;
+ $('optStr').textContent=fmt(best.s);$('optAgi').textContent=fmt(best.a);$('optInt').textContent=fmt(best.i);
+ $('barStr').style.width=(P?best.s/P*100:100)+'%';$('barAgi').style.width=(P?best.a/P*100:0)+'%';$('barInt').style.width=(P?best.i/P*100:0)+'%';
+ $('bestDps').textContent=fmt(best.dps);$('gain').textContent='힘 올인 대비 +'+((best.dps/allStr.dps-1)*100).toFixed(2)+'%';
+ $('caps').textContent=`민첩 5,000까지 ${fmt(Math.ceil(5000/am))}P 필요 · 지력 5,000까지 ${fmt(Math.ceil(5000/im))}P 필요`;
+ const manual=$('manualEnabled').checked;$('manual').classList.toggle('visible',manual);$('detailTitle').textContent=manual?'직접 분배 상세 결과':'최적 분배 상세 결과';
+ let a=0,i=0;if(manual){a=Math.min(maxA,P,Math.max(0,Math.floor(Number($('agiSlider').value)||0)));i=Math.min(maxI,P-a,Math.max(0,Math.floor(Number($('intSlider').value)||0)));}
+ $('agiSlider').max=Math.max(0,Math.min(maxA,P-i));$('agiSlider').value=a;
+ $('intSlider').max=Math.max(0,Math.min(maxI,P-a));$('intSlider').value=i;
+ $('agiVal').textContent=fmt(a);$('intVal').textContent=fmt(i);$('manualStr').textContent=`힘 ${fmt(P-a-i)}P에 자동 분배`;const c=manual?x.evalAt(a,i):best;
+ const entries={effStr:fmt(c.s*x.sm),effAgi:fmt(c.da),effInt:fmt(c.di),normal:fmt(c.normal),critRate:percent(c.c),critMultiplier:(x.cm*100).toFixed(2)+'%',critical:fmt(c.critical),avg:fmt(c.avg),intCool:percent(c.di*.00002),coolRate:percent(c.cool),coolMult:(1/(1-c.cool)).toFixed(4)+'배',dps:fmt(c.dps)};
+ for(let [k,val] of Object.entries(entries))$(k).textContent=val;
+ $('status').textContent=manual?'최적 분배 대비 '+((c.dps/best.dps-1)*100).toFixed(2)+'%':'추천 조합은 정수 스텟포인트 기준으로 계산했습니다.';
+ latest.shown=c;
+}
+for(let id of ids)$(id).addEventListener('input',view);
+$('manualEnabled').addEventListener('change',view);
+$('agiSlider').addEventListener('input',()=>{const x=latest;const a=Number($('agiSlider').value);const maxI=Math.min(x.maxI,x.P-a);$('intSlider').value=Math.min(maxI,Number($('intSlider').value));view();});
+$('intSlider').addEventListener('input',()=>{const x=latest;const i=Number($('intSlider').value);const maxA=Math.min(x.maxA,x.P-i);$('agiSlider').value=Math.min(maxA,Number($('agiSlider').value));view();});
+$('reset').addEventListener('click',()=>{for(let [k,v] of Object.entries({points:15000,rebirth:14000,strBonus:0,agiBonus:100,intBonus:0,critChance:0,critDamage:0,cooldown:0}))$(k).value=v;$('manualEnabled').checked=false;$('agiSlider').value=0;$('intSlider').value=0;view();});
+$('optimalButton').addEventListener('click',()=>{$('manualEnabled').checked=false;view();});
+$('copy').addEventListener('click',async()=>{let x=latest,c=x.shown;let t=`스텟 계산 결과\n총 스텟: ${fmt(x.P)} / 환생력: ${fmt(x.R)}\n힘 ${fmt(c.s)} / 민첩 ${fmt(c.a)} / 지력 ${fmt(c.i)}\n유효 민첩 ${fmt(c.da)} / 유효 지력 ${fmt(c.di)}\n크리티컬 확률 ${percent(c.c)} / 쿨타임 감소 ${percent(c.cool)}\n평균 데미지 ${fmt(c.avg)} / 평균 DPS ${fmt(c.dps)}`;try{await navigator.clipboard.writeText(t);$('status').textContent='결과를 복사했습니다.';}catch(e){let ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');$('status').textContent='결과를 복사했습니다.';}catch(e){$('status').textContent='복사에 실패했습니다.';}ta.remove();}});
+view();
+</script></body></html>
